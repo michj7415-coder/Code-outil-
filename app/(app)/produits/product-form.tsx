@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useMemo, useRef, useState } from "react";
+import { useActionState, useMemo, useRef, useState, useTransition } from "react";
 import { Alert, Button, Card, Field, cx, inputClass } from "@/components/ui";
 import { computePricing, formatMoney, type PricingSettings } from "@/lib/pricing";
 import { CATEGORIES, PHOTO_MAX_BYTES, PHOTO_TYPES, productSchema, type Category } from "@/lib/validation/product";
@@ -51,6 +51,7 @@ export function ProductForm({
   peers: PeerPrice[];
 }) {
   const [state, formAction, pending] = useActionState<FormState, FormData>(saveProduct, {});
+  const [, startTransition] = useTransition();
 
   const [name, setName] = useState(initial.name);
   const [category, setCategory] = useState<Category>(initial.category);
@@ -71,11 +72,20 @@ export function ProductForm({
   const [removePhoto, setRemovePhoto] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  // React vide le champ fichier après l'envoi du formulaire. En cas d'erreur,
-  // la photo choisie n'a pas été enregistrée : on retire son aperçu.
+  // Envoi sans la réinitialisation automatique du formulaire par React (elle
+  // désynchronise les listes déroulantes). Le champ photo est vidé dès l'envoi
+  // pour ne pas renvoyer la même photo au prochain enregistrement.
+  function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const data = new FormData(e.currentTarget);
+    if (fileRef.current) fileRef.current.value = "";
+    startTransition(() => formAction(data));
+  }
   const [seenState, setSeenState] = useState(state);
   if (seenState !== state) {
     setSeenState(state);
+    if (state.message) setRemovePhoto(false);
+    // En cas d'erreur, la photo choisie n'a pas été enregistrée : on retire son aperçu.
     if (state.error && photoPreview?.startsWith("blob:")) setPhotoPreview(initial.photoUrl);
   }
 
@@ -140,7 +150,7 @@ export function ProductForm({
   };
 
   return (
-    <form action={formAction} noValidate className="grid gap-6 lg:grid-cols-[1fr_320px] lg:items-start">
+    <form onSubmit={onSubmit} noValidate className="grid gap-6 lg:grid-cols-[1fr_320px] lg:items-start">
       <input type="hidden" name="payload" value={JSON.stringify(payload)} />
       {initial.id && <input type="hidden" name="id" value={initial.id} />}
       <input type="hidden" name="removePhoto" value={removePhoto ? "1" : "0"} />
