@@ -52,7 +52,7 @@ describe("validation du produit", () => {
 
   it("contrôle le format et le poids de la photo", () => {
     expect(validatePhoto(null)).toBeNull();
-    expect(validatePhoto(new File(["x"], "a.gif", { type: "image/gif" }))).toMatch(/JPG, PNG ou WebP/);
+    expect(validatePhoto(new File(["x"], "a.gif", { type: "image/gif" }))).toMatch(/JPG ou PNG/);
     expect(validatePhoto(new File([new Uint8Array(6 * 1024 * 1024)], "a.jpg", { type: "image/jpeg" }))).toMatch(/5 Mo/);
     expect(validatePhoto(new File(["x"], "a.jpg", { type: "image/jpeg" }))).toBeNull();
   });

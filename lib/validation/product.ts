@@ -98,12 +98,13 @@ export const techSheetSchema = z.object({
 
 export type TechSheetData = z.output<typeof techSheetSchema>;
 
-export const PHOTO_TYPES = ["image/jpeg", "image/png", "image/webp"];
+// Formats lisibles par le générateur de PDF.
+export const PHOTO_TYPES = ["image/jpeg", "image/png"];
 export const PHOTO_MAX_BYTES = 5 * 1024 * 1024;
 
 export function validatePhoto(file: File | null): string | null {
   if (!file || file.size === 0) return null;
-  if (!PHOTO_TYPES.includes(file.type)) return "La photo doit être au format JPG, PNG ou WebP.";
+  if (!PHOTO_TYPES.includes(file.type)) return "La photo doit être au format JPG ou PNG.";
   if (file.size > PHOTO_MAX_BYTES) return "La photo ne doit pas dépasser 5 Mo.";
   return null;
 }

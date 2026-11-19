@@ -119,7 +119,7 @@ export function ProductForm({
     setPhotoError(null);
     if (!file) return;
     if (!PHOTO_TYPES.includes(file.type)) {
-      setPhotoError("La photo doit être au format JPG, PNG ou WebP.");
+      setPhotoError("La photo doit être au format JPG ou PNG.");
       e.target.value = "";
       return;
     }

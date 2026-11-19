@@ -16,7 +16,7 @@ function parsePayload(formData: FormData): unknown {
 }
 
 function photoExtension(type: string) {
-  return type === "image/png" ? "png" : type === "image/webp" ? "webp" : "jpg";
+  return type === "image/png" ? "png" : "jpg";
 }
 
 export async function saveProduct(_prev: FormState, formData: FormData): Promise<FormState> {

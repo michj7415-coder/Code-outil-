@@ -166,7 +166,7 @@ end $$;
 -- ---------------------------------------------------------------------
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values ('product-photos', 'product-photos', false, 5242880,
-        array['image/jpeg', 'image/png', 'image/webp'])
+        array['image/jpeg', 'image/png'])
 on conflict (id) do nothing;
 
 create policy "photos: lecture propriétaire" on storage.objects
