@@ -6,6 +6,8 @@ export type FormState = {
   error?: string;
   message?: string;
   fieldErrors?: FieldErrors;
+  /** valeurs saisies, renvoyées pour pré-remplir le formulaire après une erreur */
+  values?: Record<string, string>;
 };
 
 /** Transforme une erreur zod en { champ: premier message }. */

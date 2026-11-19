@@ -26,6 +26,7 @@ export function AuthForm({ mode, action }: Props) {
           name="email"
           type="email"
           autoComplete="email"
+          defaultValue={state.values?.email}
           required
           className={inputClass}
           aria-invalid={Boolean(fe.email)}

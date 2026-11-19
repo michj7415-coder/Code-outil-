@@ -9,7 +9,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     <div className="min-h-dvh">
       <header className="sticky top-0 z-20 border-b border-line bg-white/90 backdrop-blur">
         <div className="mx-auto flex h-14 max-w-5xl items-center gap-2 px-4">
-          <Link href="/produits" className="mr-2 text-sm font-semibold whitespace-nowrap">
+          <Link href="/produits" className="mr-2 hidden text-sm font-semibold whitespace-nowrap sm:inline">
             Prix de revient
           </Link>
           <nav className="flex flex-1 items-center gap-1">

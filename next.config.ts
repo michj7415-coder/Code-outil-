@@ -4,6 +4,8 @@ import type { NextConfig } from "next";
 // toutes les pages sont rendues à la demande, sans Cache Components.
 const nextConfig: NextConfig = {
   serverExternalPackages: ["@react-pdf/renderer"],
+  // Les photos (5 Mo max) transitent par une Server Action.
+  experimental: { serverActions: { bodySizeLimit: "6mb" } },
   images: {
     remotePatterns: [{ protocol: "https", hostname: "*.supabase.co" }],
   },
