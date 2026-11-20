@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useMemo, useRef, useState, useTransition } from "react";
-import { Alert, Button, Card, EmptyState, Field, cx, inputClass } from "@/components/ui";
+import { Alert, Card, EmptyState, Field, cx, inputClass } from "@/components/ui";
 import { IconPlus, IconShirt } from "@/components/icons";
 import { computePricing, formatMoney, type PricingSettings } from "@/lib/pricing";
 import { CATEGORIES, PHOTO_MAX_BYTES, PHOTO_TYPES, productSchema, type Category } from "@/lib/validation/product";
@@ -151,7 +151,7 @@ export function ProductForm({
   };
 
   return (
-    <form onSubmit={onSubmit} noValidate className="grid gap-6 lg:grid-cols-[1fr_320px] lg:items-start">
+    <form onSubmit={onSubmit} noValidate className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start lg:gap-8">
       <input type="hidden" name="payload" value={JSON.stringify(payload)} />
       {initial.id && <input type="hidden" name="id" value={initial.id} />}
       <input type="hidden" name="removePhoto" value={removePhoto ? "1" : "0"} />
@@ -425,20 +425,19 @@ export function ProductForm({
         </Card>
       </div>
 
-      <div className="flex flex-col gap-4 lg:sticky lg:top-20">
-        <ResultPanel
-          pricing={pricing}
-          settings={settings}
-          currency={currency}
-          category={category}
-          productId={initial.id}
-          peers={peers}
-          onUseSuggested={() => setRetailPrice(str(pricing.suggested.retailTtc))}
-        />
-        <Button type="submit" disabled={pending} className="w-full">
-          {pending ? "Enregistrement…" : initial.id ? "Enregistrer les modifications" : "Créer le produit"}
-        </Button>
-      </div>
+      <ResultPanel
+        pricing={pricing}
+        settings={settings}
+        currency={currency}
+        category={category}
+        productId={initial.id}
+        peers={peers}
+        onUseSuggested={() => setRetailPrice(str(pricing.suggested.retailTtc))}
+        pending={pending}
+        submitLabel={initial.id ? "Enregistrer les modifications" : "Créer le produit"}
+      />
+      {/* Espace pour la barre fixe du bas sur téléphone */}
+      <div className="h-20 lg:hidden" aria-hidden />
     </form>
   );
 }

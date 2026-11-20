@@ -16,8 +16,12 @@ export type PeerPrice = { id: string; category: string; priceTtc: number };
 export type Advice = {
   id: "prix-conseille" | "marge" | "tissu" | "categorie" | "prix-absent";
   tone: "info" | "ok" | "warn";
+  /** le constat (le problème ou le repère) */
   title: string;
-  detail: string;
+  /** pourquoi c'est important, chiffres à l'appui */
+  why: string;
+  /** que faire concrètement */
+  action: string;
 };
 
 export type AdviceContext = {
@@ -45,7 +49,8 @@ export function buildAdvice(ctx: AdviceContext): Advice[] {
         id: "prix-conseille",
         tone: "info",
         title: "Saisis tes coûts pour obtenir des conseils",
-        detail: "Ajoute tes tissus, accessoires et la main-d'œuvre : le prix conseillé et la marge se calculeront au fur et à mesure.",
+        why: "Sans coût de revient, impossible de calculer un prix conseillé ni une marge.",
+        action: "Ajoute au moins un tissu et la main-d'œuvre : les conseils apparaîtront au fur et à mesure.",
       },
     ];
   }
@@ -56,12 +61,13 @@ export function buildAdvice(ctx: AdviceContext): Advice[] {
     id: "prix-conseille",
     tone: "info",
     title: `Prix public conseillé : ${money(s.retailTtc)} TTC`,
-    detail:
+    why:
       `Ton coût de revient est de ${money(cost)}. Multiplié par ${coef(settings.wholesaleCoef)} (coefficient de gros), ` +
       `il donne un prix de gros de ${money(s.wholesaleHt)} HT : le prix auquel une boutique t'achèterait la pièce. ` +
       `Multiplié par ${coef(settings.retailCoef)} (coefficient de détail), on obtient ${money(s.retailHt)} HT, ` +
       `soit ${money(s.retailTtc)} TTC avec ${pct(settings.vatRate)} de TVA. ` +
       `C'est la règle courante dans la mode : elle laisse de la marge à toi et à tes revendeurs.`,
+    action: "Pars de ce prix, puis ajuste-le selon ton positionnement et les prix pratiqués par des marques comparables.",
   });
 
   if (pricing.usesSuggestedPrice) {
@@ -69,7 +75,8 @@ export function buildAdvice(ctx: AdviceContext): Advice[] {
       id: "prix-absent",
       tone: "info",
       title: "Tu n'as pas encore fixé ton prix",
-      detail: "En attendant, la marge est calculée sur le prix conseillé. Saisis ton prix public TTC pour voir ta marge réelle.",
+      why: "En attendant, la marge affichée est calculée sur le prix conseillé, pas sur ton vrai prix.",
+      action: "Saisis ton prix public TTC dans « Ton prix de vente » pour voir ta marge réelle.",
     });
   }
 
@@ -87,18 +94,20 @@ export function buildAdvice(ctx: AdviceContext): Advice[] {
         title: loss
           ? `Tu vends à perte : ${money(-pricing.marginAmount)} perdus par pièce`
           : `Marge de ${pct(rate)}, sous ton seuil de ${pct(threshold)}`,
-        detail:
+        why:
           `Sur un prix de ${money(pricing.priceHt)} HT, il te reste ${money(pricing.marginAmount)} par pièce une fois le coût de revient payé. ` +
-          `Pour atteindre ${pct(threshold)} de marge, il faudrait vendre au moins ${money(htToTtc(minHt, settings.vatRate))} TTC, ` +
-          `ou faire baisser ton coût de revient à ${money(Math.max(0, maxCost))} maximum. ` +
           `Cette marge doit encore payer tes frais fixes (site, salons, photos, ton salaire).`,
+        action:
+          `Pour atteindre ${pct(threshold)} de marge, vends au moins ${money(htToTtc(minHt, settings.vatRate))} TTC, ` +
+          `ou fais baisser ton coût de revient à ${money(Math.max(0, maxCost))} maximum (tissu, façon, accessoires).`,
       });
     } else {
       out.push({
         id: "marge",
         tone: "ok",
         title: `Marge de ${pct(rate)}, au-dessus de ton seuil de ${pct(threshold)}`,
-        detail: `Il te reste ${money(pricing.marginAmount)} par pièce vendue ${money(pricing.priceHt)} HT, pour couvrir tes frais fixes et te rémunérer.`,
+        why: `Il te reste ${money(pricing.marginAmount)} par pièce vendue ${money(pricing.priceHt)} HT, pour couvrir tes frais fixes et te rémunérer.`,
+        action: "Garde ce cap. Vérifie dans le simulateur ce que donnerait une hausse du prix du tissu.",
       });
     }
   }
@@ -110,10 +119,10 @@ export function buildAdvice(ctx: AdviceContext): Advice[] {
       id: "tissu",
       tone: "warn",
       title: `Ton tissu représente ${pct(share)} du coût`,
-      detail:
+      why:
         `Au-delà de ${pct(FABRIC_SHARE_ALERT)}, ton prix dépend surtout du tissu : une hausse de 10 % de son prix ` +
-        `augmenterait ton coût de revient de ${money(round2(pricing.cost.materials * 0.1))}. ` +
-        `Pistes : négocier un prix au volume, optimiser le placement pour réduire le métrage, ou comparer d'autres fournisseurs.`,
+        `augmenterait ton coût de revient de ${money(round2(pricing.cost.materials * 0.1))}.`,
+      action: "Négocie un prix au volume, optimise le placement pour réduire le métrage, ou compare d'autres fournisseurs.",
     });
   }
 
@@ -128,10 +137,12 @@ export function buildAdvice(ctx: AdviceContext): Advice[] {
         id: "categorie",
         tone: "warn",
         title: `Prix ${pct(Math.abs(gap))} ${gap > 0 ? "au-dessus" : "en dessous"} de tes autres produits « ${label} »`,
-        detail:
+        why:
           `Tes ${others.length} autres produits de cette catégorie sont vendus autour de ${money(med)} TTC (prix médian), ` +
-          `contre ${money(pricing.priceTtc)} ici. Un écart important peut brouiller la lecture de ta gamme. ` +
-          `S'il est voulu (matière plus noble, finitions, édition limitée), tu peux l'assumer et l'expliquer à tes clients.`,
+          `contre ${money(pricing.priceTtc)} ici. Un écart important peut brouiller la lecture de ta gamme.`,
+        action:
+          `Si l'écart est voulu (matière plus noble, finitions, édition limitée), assume-le et explique-le à tes clients ; ` +
+          `sinon, rapproche ton prix de ${money(med)}.`,
       });
     }
   }

@@ -38,10 +38,11 @@ describe("conseils sur les prix", () => {
   it("explique le prix conseillé étape par étape", () => {
     const a = find(buildAdvice(ctx(balanced, 120)), "prix-conseille")!;
     expect(nbsp(a.title)).toBe("Prix public conseillé : 120,00 € TTC");
-    expect(nbsp(a.detail)).toContain("Multiplié par 2 (coefficient de gros)");
-    expect(nbsp(a.detail)).toContain("prix de gros de 50,00 € HT");
-    expect(nbsp(a.detail)).toContain("100,00 € HT");
-    expect(nbsp(a.detail)).toContain("20 % de TVA");
+    expect(nbsp(a.why)).toContain("Multiplié par 2 (coefficient de gros)");
+    expect(nbsp(a.why)).toContain("prix de gros de 50,00 € HT");
+    expect(nbsp(a.why)).toContain("100,00 € HT");
+    expect(nbsp(a.why)).toContain("20 % de TVA");
+    expect(a.action).toMatch(/ajuste/);
   });
 
   it("alerte quand la marge est sous le seuil et chiffre le prix minimum", () => {
@@ -50,8 +51,9 @@ describe("conseils sur les prix", () => {
     expect(a.tone).toBe("warn");
     expect(nbsp(a.title)).toBe("Marge de 38 %, sous ton seuil de 50 %");
     // 50 % de marge → prix HT minimum 50 € → 60 € TTC ; coût max 20 €
-    expect(nbsp(a.detail)).toContain("au moins 60,00 € TTC");
-    expect(nbsp(a.detail)).toContain("20,00 € maximum");
+    expect(nbsp(a.why)).toContain("il te reste 15,00 € par pièce");
+    expect(nbsp(a.action)).toContain("au moins 60,00 € TTC");
+    expect(nbsp(a.action)).toContain("20,00 € maximum");
   });
 
   it("signale clairement une vente à perte", () => {
@@ -72,7 +74,8 @@ describe("conseils sur les prix", () => {
   it("alerte quand le tissu dépasse 50 % du coût", () => {
     const a = find(buildAdvice(ctx(fabricHeavy, 80)), "tissu")!;
     expect(nbsp(a.title)).toBe("Ton tissu représente 75 % du coût");
-    expect(nbsp(a.detail)).toContain("1,50 €");
+    expect(nbsp(a.why)).toContain("1,50 €");
+    expect(a.action).toMatch(/fournisseurs/);
     expect(find(buildAdvice(ctx(balanced, 80)), "tissu")).toBeUndefined();
   });
 
@@ -86,8 +89,9 @@ describe("conseils sur les prix", () => {
     ];
     const a = find(buildAdvice(ctx(balanced, 120, { peers })), "categorie")!;
     expect(nbsp(a.title)).toBe("Prix 167 % au-dessus de tes autres produits « t-shirt »");
-    expect(nbsp(a.detail)).toContain("Tes 3 autres produits");
-    expect(nbsp(a.detail)).toContain("45,00 € TTC");
+    expect(nbsp(a.why)).toContain("Tes 3 autres produits");
+    expect(nbsp(a.why)).toContain("45,00 € TTC");
+    expect(nbsp(a.action)).toContain("rapproche ton prix de 45,00 €");
 
     const cheap = find(buildAdvice(ctx(balanced, 20, { peers })), "categorie")!;
     expect(cheap.title).toContain("en dessous");
@@ -109,6 +113,14 @@ describe("conseils sur les prix", () => {
     const list = buildAdvice(ctx({ materials: [], accessories: [], laborCost: 0, extraCosts: [] }, null));
     expect(list).toHaveLength(1);
     expect(list[0].title).toMatch(/Saisis tes coûts/);
+  });
+
+  it("chaque conseil a un constat, un pourquoi et un que faire", () => {
+    for (const a of buildAdvice(ctx(fabricHeavy, 20, { peers: [{ id: "a", category: "tshirt", priceTtc: 90 }, { id: "b", category: "tshirt", priceTtc: 95 }] }))) {
+      expect(a.title.length).toBeGreaterThan(5);
+      expect(a.why.length).toBeGreaterThan(20);
+      expect(a.action.length).toBeGreaterThan(20);
+    }
   });
 
   it("présente les conseils comme des repères", () => {
