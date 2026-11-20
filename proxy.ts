@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
+import { cleanUrl } from "@/lib/supabase/env";
 
 const PUBLIC_PATHS = ["/connexion", "/inscription", "/auth"];
 
@@ -8,8 +9,8 @@ const PUBLIC_PATHS = ["/connexion", "/inscription", "/auth"];
  */
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+  const url = cleanUrl(process.env.NEXT_PUBLIC_SUPABASE_URL);
+  const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY?.trim();
   if (!url || !key) return missingConfigPage();
 
   const supabase = createServerClient(url, key, {

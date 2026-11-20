@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { siteUrl } from "@/lib/supabase/env";
 import { authErrorMessage, credentialsSchema, signUpSchema } from "@/lib/validation/auth";
 import { toFieldErrors, type FormState } from "@/lib/validation/form";
 
@@ -26,11 +27,10 @@ export async function signUp(_prev: FormState, formData: FormData): Promise<Form
   if (!parsed.success) return { values, fieldErrors: toFieldErrors(parsed.error) };
 
   const supabase = await createClient();
-  const site = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
   const { data, error } = await supabase.auth.signUp({
     email: parsed.data.email,
     password: parsed.data.password,
-    options: { emailRedirectTo: `${site}/auth/callback` },
+    options: { emailRedirectTo: `${siteUrl()}/auth/callback` },
   });
   if (error) return { values, error: authErrorMessage(error.code, error.message) };
 
