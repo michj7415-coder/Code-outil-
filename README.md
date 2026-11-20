@@ -10,6 +10,8 @@ Application web pour les créateurs de marques de vêtements : calcul du prix de
 - **Conseils expliqués** : prix de gros et prix public conseillés, alerte de marge sous le seuil, alerte si le tissu dépasse 50 % du coût, comparaison avec les autres produits de la même catégorie. Ces conseils restent des repères, pas des vérités.
 - **Simulateur** : variation du prix du tissu, de la main-d'œuvre ou du prix de vente. Affiche la nouvelle marge et le seuil de rentabilité.
 - **Fiche technique PDF** : photo, catégorie, matières et métrages, accessoires, tableau de mesures XS à XL, fournisseurs et consignes. Elle ne contient aucun prix, car elle est destinée à l'atelier.
+- **Tableau de bord** : nombre de produits, marge moyenne, produits en alerte, bloc « À faire maintenant » (marges sous le seuil, fiches incomplètes) et liste avec code couleur de marge (vert ≥ seuil, orange jusqu'à 10 points dessous, rouge au-delà).
+- **Avis** : bouton « Donner mon avis » (note de 1 à 5 + une question). Les réponses sont dans la table `feedback`, visible dans Supabase → Table Editor ; chaque utilisateur peut seulement ajouter les siennes.
 - **Paramètres** : seuil de marge, TVA, coefficients de gros et de détail, devise et frais fixes par défaut.
 
 ## Stack
@@ -33,6 +35,7 @@ cp .env.example .env.local   # puis renseigne les variables (voir ci-dessous)
      1. `supabase/migrations/0001_init.sql` (tables, sécurité, stockage des photos) ;
      2. `supabase/migrations/0002_product_functions.sql` (fonctions d'enregistrement) ;
      3. `supabase/migrations/0003_grants.sql` (droits d'accès ; indispensable sur les projets récents, sinon erreur « permission denied », code 42501).
+     4. `supabase/migrations/0004_feedback.sql` (avis des utilisateurs, bouton « Donner mon avis »).
    - **Avec la CLI Supabase** :
      ```bash
      npx supabase login

@@ -3,6 +3,7 @@ import { requireUser } from "@/lib/supabase/server";
 import { signOut } from "../(auth)/actions";
 import { BottomNav, TopNav } from "@/components/nav-link";
 import { IconLogout } from "@/components/icons";
+import { FeedbackButton } from "@/components/feedback-button";
 import { checkSetup } from "@/lib/setup-check";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
@@ -18,6 +19,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           </Link>
           <TopNav />
           <div className="ml-auto flex items-center gap-1">
+            <FeedbackButton />
             <span className="hidden max-w-48 truncate text-xs text-muted lg:inline" title={email}>
               {email}
             </span>
