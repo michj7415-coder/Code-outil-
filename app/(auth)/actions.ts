@@ -18,7 +18,7 @@ export async function signIn(_prev: FormState, formData: FormData): Promise<Form
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword(parsed.data);
   if (error) return { values, error: authErrorMessage(error.code, error.message) };
-  redirect("/produits");
+  redirect("/tableau-de-bord");
 }
 
 export async function signUp(_prev: FormState, formData: FormData): Promise<FormState> {
@@ -35,7 +35,7 @@ export async function signUp(_prev: FormState, formData: FormData): Promise<Form
   if (error) return { values, error: authErrorMessage(error.code, error.message) };
 
   // Confirmation d'email désactivée dans Supabase : la session est déjà ouverte.
-  if (data.session) redirect("/produits");
+  if (data.session) redirect("/tableau-de-bord");
   return { message: "Compte créé. Ouvre l'email de confirmation que nous venons d'envoyer pour activer ton compte." };
 }
 

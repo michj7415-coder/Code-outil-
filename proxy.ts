@@ -40,7 +40,7 @@ export async function proxy(request: NextRequest) {
   }
   if (isLoggedIn && (path === "/connexion" || path === "/inscription")) {
     const target = request.nextUrl.clone();
-    target.pathname = "/produits";
+    target.pathname = "/tableau-de-bord";
     target.search = "";
     return NextResponse.redirect(target);
   }
