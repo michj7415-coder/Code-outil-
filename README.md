@@ -29,7 +29,10 @@ cp .env.example .env.local   # puis renseigne les variables (voir ci-dessous)
 
 1. Sur [supabase.com/dashboard](https://supabase.com/dashboard), clique sur **New project**. Choisis une région proche de tes utilisateurs, par exemple Paris (eu-west-3).
 2. Crée les tables, les règles de sécurité et le stockage des photos. Deux méthodes possibles :
-   - **Sans outil** : dans **SQL Editor**, colle puis exécute le contenu de `supabase/migrations/0001_init.sql`, puis celui de `supabase/migrations/0002_product_functions.sql`, **dans cet ordre**.
+   - **Sans outil** : dans **SQL Editor**, colle puis exécute, **dans cet ordre** et chacun dans une nouvelle requête, le contenu de :
+     1. `supabase/migrations/0001_init.sql` (tables, sécurité, stockage des photos) ;
+     2. `supabase/migrations/0002_product_functions.sql` (fonctions d'enregistrement) ;
+     3. `supabase/migrations/0003_grants.sql` (droits d'accès ; indispensable sur les projets récents, sinon erreur « permission denied », code 42501).
    - **Avec la CLI Supabase** :
      ```bash
      npx supabase login
@@ -119,5 +122,6 @@ tests/                                   tests unitaires
 
 - Tables : `settings`, `products`, `product_materials`, `product_accessories`, `product_extra_costs` et `product_sizes`. Les fournisseurs sont saisis en texte libre sur le produit.
 - La RLS est active sur toutes les tables : un utilisateur ne lit et n'écrit que ses lignes. Une ligne enfant (matière, accessoire…) ne peut être rattachée qu'à un produit de l'utilisateur.
+- Les droits d'accès des utilisateurs connectés sont donnés explicitement (`0003_grants.sql`) ; le rôle `anon` n'a aucun droit sur les tables.
 - Les fonctions SQL `save_product`, `save_tech_sheet` et `duplicate_product` enregistrent un produit et ses lignes en une seule transaction. Elles s'exécutent avec les droits de l'utilisateur (`security invoker`), donc la RLS s'applique.
 - Les photos sont rangées dans un bucket **privé** (`product-photos`), avec un dossier par utilisateur. Elles sont affichées par URL signée (valable 1 h). Formats acceptés : JPG et PNG, 5 Mo maximum.

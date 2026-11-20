@@ -12,12 +12,14 @@ const isMissingFunction = (e: DbError) =>
   e?.code === "PGRST202" || e?.code === "42883" || /could not find the function/i.test(e?.message ?? "");
 
 const RUN_0001 = "Dans Supabase, ouvre SQL Editor → New query, colle tout le fichier supabase/migrations/0001_init.sql puis Run.";
-const RUN_0002 = "Puis, dans une nouvelle requête, colle tout le fichier supabase/migrations/0002_product_functions.sql puis Run.";
+const RUN_0002 =
+  "Puis, dans une nouvelle requête, exécute de la même façon supabase/migrations/0002_product_functions.sql, puis 0003_grants.sql.";
 
 /** Explique en français une erreur de base de données renvoyée par Supabase. */
 export function describeDbError(e: DbError): string {
   if (isMissingTable(e)) return "La base n'est pas initialisée : exécute le fichier SQL 0001_init.sql dans Supabase.";
   if (isMissingFunction(e)) return "Il manque les fonctions SQL : exécute le fichier 0002_product_functions.sql dans Supabase.";
+  if (e?.code === "42501") return "Accès refusé : exécute le fichier 0003_grants.sql dans Supabase.";
   return `Erreur de la base de données${e?.code ? ` (${e.code})` : ""} : ${e?.message ?? "inconnue"}`;
 }
 
@@ -39,6 +41,18 @@ export async function checkSetup(supabase: SupabaseClient, userId: string): Prom
       title: "La base de données n'est pas encore créée",
       steps: [RUN_0001, RUN_0002, "Reviens ici et recharge la page."],
       technical: `${(settings.error ?? products.error)?.code ?? ""} ${(settings.error ?? products.error)?.message ?? ""}`,
+    };
+  }
+  const denied = [settings.error, products.error].find((e) => e?.code === "42501");
+  if (denied) {
+    return {
+      title: "Les tables existent, mais l'application n'a pas le droit d'y accéder",
+      steps: [
+        "Dans Supabase, ouvre SQL Editor → New query.",
+        "Colle tout le fichier supabase/migrations/0003_grants.sql puis Run.",
+        "Reviens ici et recharge la page.",
+      ],
+      technical: `${denied.code} ${denied.message}`,
     };
   }
   if (settings.error || products.error) {
