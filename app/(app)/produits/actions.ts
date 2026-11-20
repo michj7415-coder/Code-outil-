@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/supabase/server";
 import { PHOTO_BUCKET } from "@/lib/data";
+import { describeDbError } from "@/lib/setup-check";
 import { productSchema, techSheetSchema, validatePhoto } from "@/lib/validation/product";
 import { toFieldErrors, type FormState } from "@/lib/validation/form";
 
@@ -35,7 +36,7 @@ export async function saveProduct(_prev: FormState, formData: FormData): Promise
 
   const { data: productId, error } = await supabase.rpc("save_product", { p_id: id, p: parsed.data });
   if (error || !productId) {
-    return { error: "L'enregistrement a échoué. Vérifie ta connexion et réessaie." };
+    return { error: `L'enregistrement a échoué. ${describeDbError(error)}` };
   }
 
   // Photo : remplacement ou suppression
@@ -71,7 +72,7 @@ export async function saveTechSheet(_prev: FormState, formData: FormData): Promi
     return { error: "Certains champs sont à corriger.", fieldErrors: toFieldErrors(parsed.error) };
   }
   const { error } = await supabase.rpc("save_tech_sheet", { p_id: id, p: parsed.data });
-  if (error) return { error: "L'enregistrement a échoué. Réessaie." };
+  if (error) return { error: `L'enregistrement a échoué. ${describeDbError(error)}` };
   revalidatePath(`/produits/${id}`, "layout");
   return { message: "Fiche technique enregistrée." };
 }
