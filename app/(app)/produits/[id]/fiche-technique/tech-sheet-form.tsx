@@ -1,7 +1,8 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { Alert, Button, Card, Field, inputClass } from "@/components/ui";
+import { Alert, Button, Card, EmptyState, Field, inputClass } from "@/components/ui";
+import { IconRuler } from "@/components/icons";
 import { toFieldErrors, type FormState } from "@/lib/validation/form";
 import { techSheetSchema } from "@/lib/validation/product";
 import type { SizeRow } from "@/lib/data";
@@ -55,6 +56,15 @@ export function TechSheetForm({
       <Card>
         <h2 className="mb-1 text-base font-semibold">Tableau de mesures</h2>
         <p className="mb-4 text-xs text-muted">En centimètres ou dans l&apos;unité de ton choix. Champs libres.</p>
+        {rows.length === 0 ? (
+          <EmptyState
+            compact
+            icon={<IconRuler width={20} height={20} />}
+            title="Aucune mesure"
+            text="Indique à l'atelier les mesures finies de chaque taille, de XS à XL."
+            action={{ label: "+ Ajouter une mesure", onClick: () => setRows(DEFAULT_MEASURES.map((l) => withKey(empty(l)))) }}
+          />
+        ) : (
         <div className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
           <table className="w-full min-w-[560px] border-separate border-spacing-y-1 text-sm">
             <thead>
@@ -109,9 +119,12 @@ export function TechSheetForm({
             </tbody>
           </table>
         </div>
-        <button type="button" onClick={() => setRows([...rows, withKey(empty())])} className="mt-2 text-sm font-medium text-accent hover:underline">
-          + Ajouter une mesure
-        </button>
+        )}
+        {rows.length > 0 && (
+          <button type="button" onClick={() => setRows([...rows, withKey(empty())])} className="mt-2 text-sm font-medium text-accent hover:underline">
+            + Ajouter une mesure
+          </button>
+        )}
       </Card>
 
       <Card className="flex flex-col gap-4">

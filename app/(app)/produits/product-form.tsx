@@ -1,7 +1,8 @@
 "use client";
 
 import { useActionState, useMemo, useRef, useState, useTransition } from "react";
-import { Alert, Button, Card, Field, cx, inputClass } from "@/components/ui";
+import { Alert, Button, Card, EmptyState, Field, cx, inputClass } from "@/components/ui";
+import { IconPlus, IconShirt } from "@/components/icons";
 import { computePricing, formatMoney, type PricingSettings } from "@/lib/pricing";
 import { CATEGORIES, PHOTO_MAX_BYTES, PHOTO_TYPES, productSchema, type Category } from "@/lib/validation/product";
 import { toFieldErrors, type FormState } from "@/lib/validation/form";
@@ -234,7 +235,15 @@ export function ProductForm({
         <Card>
           <SectionHeader title="Matières" total={formatMoney(pricing.cost.materials, currency)} />
           <LineList
-            empty="Ajoute le ou les tissus utilisés."
+            empty={
+              <EmptyState
+                compact
+                icon={<IconShirt width={20} height={20} />}
+                title="Aucun tissu pour l'instant"
+                text="Le tissu pèse souvent le plus lourd dans le coût : ajoute chaque tissu avec son prix au mètre et le métrage utilisé."
+                action={{ label: "+ Ajouter un tissu", onClick: () => setMaterials([...materials, { key: newKey(), name: "", pricePerMeter: "", metersUsed: "" }]) }}
+              />
+            }
             rows={materials}
             onRemove={(k) => setMaterials((r) => r.filter((x) => x.key !== k))}
             render={(row) => (
@@ -266,16 +275,26 @@ export function ProductForm({
               </div>
             )}
           />
-          <AddButton onClick={() => setMaterials([...materials, { key: newKey(), name: "", pricePerMeter: "", metersUsed: "" }])}>
-            Ajouter un tissu
-          </AddButton>
+          {materials.length > 0 && (
+            <AddButton onClick={() => setMaterials([...materials, { key: newKey(), name: "", pricePerMeter: "", metersUsed: "" }])}>
+              Ajouter un tissu
+            </AddButton>
+          )}
         </Card>
 
         {/* Accessoires */}
         <Card>
           <SectionHeader title="Accessoires" total={formatMoney(pricing.cost.accessories, currency)} />
           <LineList
-            empty="Boutons, fermetures, étiquettes, emballage…"
+            empty={
+              <EmptyState
+                compact
+                icon={<IconPlus width={20} height={20} />}
+                title="Aucun accessoire"
+                text="Boutons, fermetures, étiquettes, emballage… Chaque petit élément compte dans le prix de revient."
+                action={{ label: "+ Ajouter un accessoire", onClick: () => setAccessories([...accessories, { key: newKey(), name: "", unitPrice: "", quantity: "1" }]) }}
+              />
+            }
             rows={accessories}
             onRemove={(k) => setAccessories((r) => r.filter((x) => x.key !== k))}
             render={(row) => (
@@ -312,9 +331,11 @@ export function ProductForm({
               <option key={s} value={s} />
             ))}
           </datalist>
-          <AddButton onClick={() => setAccessories([...accessories, { key: newKey(), name: "", unitPrice: "", quantity: "1" }])}>
-            Ajouter un accessoire
-          </AddButton>
+          {accessories.length > 0 && (
+            <AddButton onClick={() => setAccessories([...accessories, { key: newKey(), name: "", unitPrice: "", quantity: "1" }])}>
+              Ajouter un accessoire
+            </AddButton>
+          )}
         </Card>
 
         {/* Main-d'œuvre */}
@@ -329,7 +350,15 @@ export function ProductForm({
         <Card>
           <SectionHeader title="Autres frais" total={formatMoney(pricing.cost.extras, currency)} />
           <LineList
-            empty="Transport, douane, chutes… en euros ou en % du coût de fabrication."
+            empty={
+              <EmptyState
+                compact
+                icon={<IconPlus width={20} height={20} />}
+                title="Aucun autre frais"
+                text="Transport, douane, chutes de tissu… en euros ou en % du coût de fabrication."
+                action={{ label: "+ Ajouter un frais", onClick: () => setExtras([...extras, { key: newKey(), label: "", kind: "amount", value: "" }]) }}
+              />
+            }
             rows={extras}
             onRemove={(k) => setExtras((r) => r.filter((x) => x.key !== k))}
             render={(row) => (
@@ -375,9 +404,11 @@ export function ProductForm({
               <option key={s} value={s} />
             ))}
           </datalist>
-          <AddButton onClick={() => setExtras([...extras, { key: newKey(), label: "", kind: "amount", value: "" }])}>
-            Ajouter un frais
-          </AddButton>
+          {extras.length > 0 && (
+            <AddButton onClick={() => setExtras([...extras, { key: newKey(), label: "", kind: "amount", value: "" }])}>
+              Ajouter un frais
+            </AddButton>
+          )}
         </Card>
 
         {/* Prix de vente */}
@@ -445,9 +476,9 @@ function LineList<T extends { key: string }>({
   rows: T[];
   render: (row: T) => React.ReactNode;
   onRemove: (key: string) => void;
-  empty: string;
+  empty: React.ReactNode;
 }) {
-  if (rows.length === 0) return <p className="mb-3 text-sm text-muted">{empty}</p>;
+  if (rows.length === 0) return empty;
   return (
     <ul className="mb-3 flex flex-col divide-y divide-line">
       {rows.map((row) => (
